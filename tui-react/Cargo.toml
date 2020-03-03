@@ -9,5 +9,12 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
-tui = "0.8.0"
+tui = {version = "0.8.0", default-features = false }
 log = "0.4.6"
+
+[features]
+default = ["tui/termion"]
+crossterm = ["tui/crossterm"]
+curses = ["tui/easycurses", "tui/pancurses"]
+termion = ["tui/termion"]
+rustbox = ["tui/rustbox"]

@@ -15,17 +15,19 @@ failure-tools = "4.0.2"
 structopt = "0.3"
 jwalk = "0.4.0"
 byte-unit = "3"
-termion = "1.5.2"
+termion = { version = "1.5.2", optional = true }
+crossterm = { version = "0.16", optional = true }
 atty = "0.2.11"
-tui = "0.8.0"
+tui = { version = "0.8.0", default-features = false }
 petgraph = "0.5"
 itertools = "0.8.0"
 open = "1.2.2"
 log = "0.4.6"
-tui-react = { path = "./tui-react", version = "0.2" }
+tui-react = { path = "./tui-react", version = "0.2", default-features = false }
 num_cpus = "1.10.0"
 unicode-segmentation = "1.3.0"
 filesize = "0.1.0"
+termcolor = "1.1.0"
 
 [[bin]]
 name="dua"
@@ -45,3 +47,10 @@ pretty_assertions = "0.6.1"
 
 [workspace]
 members = ["tui-react"]
+
+[features]
+default = ["termion", "tui/termion", "tui-react/termion"]
+use-termion = ["termion", "tui/termion", "tui-react/termion"]
+use-crossterm = ["crossterm", "tui/crossterm", "tui-react/crossterm"]
+use-curses = ["tui/curses", "tui-react/curses"]
+use-rustbox = ["tui/rustbox", "tui-react/rustbox"]
