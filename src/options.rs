@@ -68,6 +68,7 @@ pub struct Args {
 #[derive(Debug, StructOpt)]
 pub enum Command {
     /// Launch the terminal user interface
+    #[cfg(feature = "termion")]
     #[structopt(name = "interactive", alias = "i")]
     Interactive {
         /// One or more input files or directories. If unset, we will use all entries in the current working directory.

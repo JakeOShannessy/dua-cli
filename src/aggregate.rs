@@ -2,7 +2,8 @@ use crate::{InodeFilter, WalkOptions, WalkResult};
 use failure::Error;
 use std::borrow::Cow;
 use std::{fmt, io, path::Path};
-use termion::color;
+use ansi_term::Style;
+use ansi_term::Color::{self, Blue, Cyan, Yellow, Green};
 
 /// Aggregate the given `paths` and write information about them to `out` in a human-readable format.
 /// If `compute_total` is set, it will write an additional line with the total size across all given `paths`.
@@ -99,47 +100,52 @@ pub fn aggregate(
             Path::new("total"),
             total,
             res.num_errors,
-            color::Fg(color::Reset),
+            None,
         )?;
     }
     Ok((res, stats))
 }
 
-fn path_color(path: impl AsRef<Path>) -> Box<dyn fmt::Display> {
+fn path_color(path: impl AsRef<Path>) -> Option<Color> {
     if path.as_ref().is_file() {
-        Box::new(color::Fg(color::LightBlack))
+        Some(Color::Fixed(8)) // 8 is LightBlack
     } else {
-        Box::new(color::Fg(color::Reset))
+        None
     }
 }
 
-fn write_path<C: fmt::Display>(
+fn write_path(
     out: &mut impl io::Write,
     options: &WalkOptions,
     path: impl AsRef<Path>,
     num_bytes: u64,
     num_errors: u64,
-    path_color: C,
+    path_color: Option<Color>,
 ) -> Result<(), io::Error> {
+    let byte_style = Style::new().fg(Color::Green);
+    let path_style = if let Some(color) = path_color {
+        Style::new().fg(color)
+    } else {
+        Style::new()
+    };
+    let bytes_string = byte_style
+            .paint(format!("{:>byte_column_width$}", options.byte_format.display(num_bytes).to_string(), byte_column_width = options.byte_format.width()));
+    let path_string = path_style.paint(format!("{}", options.byte_format.display(num_bytes).to_string()));
+    let error_string = if num_errors == 0 {
+        Cow::Borrowed("")
+    } else {
+        Cow::Owned(format!(
+            "  <{} IO Error{}>",
+            num_errors,
+            if num_errors > 1 { "s" } else { "" }
+        ))
+    };
     writeln!(
         out,
-        "{byte_color}{:>byte_column_width$}{byte_color_reset} {path_color}{}{path_color_reset}{}",
-        options.byte_format.display(num_bytes).to_string(), // needed for formatting to work (unless we implement it ourselves)
-        path.as_ref().display(),
-        if num_errors == 0 {
-            Cow::Borrowed("")
-        } else {
-            Cow::Owned(format!(
-                "  <{} IO Error{}>",
-                num_errors,
-                if num_errors > 1 { "s" } else { "" }
-            ))
-        },
-        byte_color = options.color.display(color::Fg(color::Green)),
-        byte_color_reset = options.color.display(color::Fg(color::Reset)),
-        path_color = options.color.display(path_color),
-        path_color_reset = options.color.display(color::Fg(color::Reset)),
-        byte_column_width = options.byte_format.width()
+        "{}{}{}",
+        bytes_string,
+        path_string,
+        error_string,
     )
 }
 

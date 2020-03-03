@@ -4,16 +4,21 @@ extern crate failure;
 extern crate failure_tools;
 extern crate structopt;
 
+#[cfg(feature = "termion")]
 use crate::interactive::TerminalApp;
 use dua::{ByteFormat, Color, TraversalSorting};
 use failure::{Error, ResultExt};
 use failure_tools::ok_or_exit;
 use std::{fs, io, io::Write, path::PathBuf, process};
 use structopt::StructOpt;
+#[cfg(feature = "termion")]
 use termion::{input::TermRead, raw::IntoRawMode, screen::AlternateScreen};
+#[cfg(feature = "termion")]
 use tui::backend::TermionBackend;
+#[cfg(feature = "termion")]
 use tui_react::Terminal;
 
+#[cfg(feature = "termion")]
 mod interactive;
 mod options;
 
@@ -34,6 +39,7 @@ fn run() -> Result<(), Error> {
         sorting: TraversalSorting::None,
     };
     let res = match opt.command {
+        #[cfg(feature = "termion")]
         Some(Interactive { input }) => {
             let mut terminal = {
                 let stdout = io::stdout()
