@@ -130,7 +130,7 @@ fn write_path(
     };
     let bytes_string = byte_style
             .paint(format!("{:>byte_column_width$}", options.byte_format.display(num_bytes).to_string(), byte_column_width = options.byte_format.width()));
-    let path_string = path_style.paint(format!("{}", options.byte_format.display(num_bytes).to_string()));
+    let path_string = path_style.paint(format!("{}", path.as_ref().display()));
     let error_string = if num_errors == 0 {
         Cow::Borrowed("")
     } else {
@@ -142,7 +142,7 @@ fn write_path(
     };
     writeln!(
         out,
-        "{}{}{}",
+        "{} {} {}",
         bytes_string,
         path_string,
         error_string,
